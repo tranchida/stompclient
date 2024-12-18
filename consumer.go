@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	conn, err := stomp.Dial("tcp", "10.108.136.84:61613", stomp.ConnOpt.HeartBeat(0, 0))
+	conn, err := stomp.Dial("tcp", "localhost:61613", stomp.ConnOpt.HeartBeat(0, 0))
 	if err != nil {
 		log.Fatal(err)
 	}
