@@ -16,7 +16,7 @@ func main() {
 
 	defer conn.Disconnect()
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1000; i++ {
 		conn.Send("my-queue", "text/plain", []byte(fmt.Sprintf("hello, world! %d", i)), stomp.SendOpt.Header("persistent", "true"))
 	}
 	log.Println("Message sent")
