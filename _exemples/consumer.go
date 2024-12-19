@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"log"
 	"math/rand"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
@@ -14,11 +12,6 @@ import (
 )
 
 func main() {
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	var wg sync.WaitGroup
 
 	conn, err := stomp.Dial("tcp", "localhost:61613", stomp.ConnOpt.HeartBeat(0, 0))
 	if err != nil {
@@ -37,8 +30,7 @@ func main() {
 	messages := make(chan *stomp.Message, 100)
 
 	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go processMessageWorker(i, ctx, &wg, conn, messages)
+		go messageConsumer(i, conn, messages)
 	}
 
 	signalChan := make(chan os.Signal, 1)
@@ -49,7 +41,6 @@ loop:
 		select {
 		case <-signalChan:
 			log.Println("Received signal, shutting down...")
-			cancel()
 			break loop
 
 		case message := <-subcription.C:
@@ -64,23 +55,13 @@ loop:
 		}
 	}
 
-	log.Println("Wait go routine shutdown")
-	wg.Wait()
-	log.Println("all go routine shutdown")
-
 	os.Exit(0)
 }
 
-func processMessageWorker(id int, ctx context.Context, wg *sync.WaitGroup, conn *stomp.Conn, messages <-chan *stomp.Message) {
+func messageConsumer(id int, conn *stomp.Conn, messages <-chan *stomp.Message) {
 
-	defer wg.Done()
-
-workerLoop:
 	for {
 		select {
-		case <-ctx.Done():
-			log.Printf("WorkerId : %d shutting down...\n", id)
-			break workerLoop
 		case message := <-messages:
 			duration := rand.Intn(500) + 1
 			log.Printf("WorkerId : %d Message : %s Duration : %d\n", id, message.Body, duration)
@@ -92,5 +73,4 @@ workerLoop:
 		}
 	}
 
-	log.Printf("WorkerId : %d Shutdown complete\n", id)
 }
