@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/go-stomp/stomp/v3"
@@ -15,8 +16,9 @@ func main() {
 
 	defer conn.Disconnect()
 
-	conn.Send("my-queue", "text/plain", []byte("hello, world!"), stomp.SendOpt.Header("persistent", "true"))
-
+	for i := 0; i < 10; i++ {
+		conn.Send("my-queue", "text/plain", []byte(fmt.Sprintf("hello, world! %d", i)), stomp.SendOpt.Header("persistent", "true"))
+	}
 	log.Println("Message sent")
 
 }

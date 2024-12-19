@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/go-stomp/stomp/v3"
 )
@@ -44,7 +45,9 @@ func main() {
 					continue
 				}
 
-				log.Println("Message : " + string(message.Body))
+				ch := make(chan bool)
+				go processMessage(message, ch)
+				<- ch
 
 				if err := conn.Ack(message); err != nil {
 					log.Printf("Error acknowledging message: %v\n", err)
@@ -62,4 +65,10 @@ func main() {
 	log.Println("Shutting down...")
 	cancel()
 
+}
+
+func processMessage(message *stomp.Message, ch chan <- bool) {
+	log.Println("Message : " + string(message.Body))
+	time.Sleep(10 * time.Second)
+	ch <- true
 }
