@@ -7,7 +7,6 @@ import (
 )
 
 func main() {
-	// Create a new producer
 
 	conn, err := stomp.Dial("tcp", "localhost:61613", stomp.ConnOpt.HeartBeat(0, 0))
 	if err != nil {
